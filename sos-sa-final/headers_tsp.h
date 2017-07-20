@@ -10,4 +10,16 @@
 #define headers_tsp_h
 
 
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <stdio.h>
+#include <string.h>
+#include <sstream>
+#include <math.h>
+#include <time.h>
+#include "tour.h"
+
+using namespace std;
+
 #endif /* headers_tsp_h */
