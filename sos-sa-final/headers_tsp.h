@@ -19,6 +19,8 @@
 #include <math.h>
 #include <time.h>
 #include "tour.h"
+#include <fstream>
+#include <math.h>       /* exp */
 
 using namespace std;
 
