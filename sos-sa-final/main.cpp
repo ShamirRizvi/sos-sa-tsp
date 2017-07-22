@@ -18,12 +18,12 @@ vector <tour> ecosystem;
 vector <tour> parasites;
 tour best_tour;
 
-pair<int, double> generate_ecosystem(int ecosystem_size, tour &seed_tour)
+int generate_ecosystem(int ecosystem_size, tour &seed_tour)
 {
     int best_organism = 0;
     double best_cost = seed_tour.__cost;
     srand ((unsigned)time(NULL));
-    pair<int, double> result;
+
     int swap_i = 0, swap_j = 0;
     for (int i = 0; i < ecosystem_size; i++)
     {
@@ -46,12 +46,10 @@ pair<int, double> generate_ecosystem(int ecosystem_size, tour &seed_tour)
         ecosystem.push_back(swap_copy);
     }
     
-    result.first = best_organism;
-    result.second = best_cost;
-    return result;
+    return best_organism;
 }
 
-void apply_mutualism(pair<int, double> &best_organism, int v_i, int v_j)
+void apply_mutualism(double &best_organism, int v_i, int v_j)
 {
     int k1, k2;
     double randio, mutual, x1, x2;
@@ -66,10 +64,10 @@ void apply_mutualism(pair<int, double> &best_organism, int v_i, int v_j)
     mutual = (ecosystem[v_i].__cost + ecosystem[v_j].__cost)/2;
     
     //Xi′=Xi+rand(0,1)×(X −Mutual ×K)
-    x1 = (x1+randio) * (x1 -mutual * k1) ;//(ecosystem[v_i].__cost + mutual *randio);
+    x1 = (x1+randio) * (best_organism - mutual * k1) ;//(ecosystem[v_i].__cost + mutual *randio);
     
     //Xj′ =Xj +rand(0,1)×(Xbest −Mutualvect ×K2)
-    x2 = (x2+randio) * (x2 - mutual * k2) ;;//(ecosystem[v_j].__cost + mutual *randio);
+    x2 = (x2+randio) * (best_organism - mutual * k2) ;;//(ecosystem[v_j].__cost + mutual *randio);
     
     //updates
     (x1 < ecosystem[v_i].__cost)? ecosystem[v_i].__cost = x1:0;
@@ -77,7 +75,7 @@ void apply_mutualism(pair<int, double> &best_organism, int v_i, int v_j)
     
 }
 
-void apply_comensalism(pair<int, double> &best_organism, int v_i, int v_j)
+void apply_comensalism(double best_organism, int v_i, int v_j)
 {
     double randio, x1;
     
@@ -85,12 +83,12 @@ void apply_comensalism(pair<int, double> &best_organism, int v_i, int v_j)
     randio = (rand() % 2) + -1;
     
     //Xi′=Xi+rand(−1,1)× Xbest−Xj if f X′i > f(Xi)
-    x1 = (ecosystem[v_i].__cost + randio) * (best_organism.second -ecosystem[v_j].__cost);
+    x1 = (ecosystem[v_i].__cost + randio) * (best_organism -ecosystem[v_j].__cost);
     //update
     (x1 < ecosystem[v_i].__cost)? ecosystem[v_i].__cost = x1:0;
 }
 
-void apply_paristism(pair<int, double> &best_organism, int v_i, int v_j)
+void apply_paristism(double best_organism, int v_i, int v_j)
 {
     if (ecosystem[v_i].__cost < ecosystem[v_i].__cost)
         ecosystem[v_i] = ecosystem[v_j];
@@ -111,14 +109,26 @@ bool update_best_solution(pair<int, double> &best_organism)
     return result;
 }
 
-pair<int, double> so (unsigned long termination, int population)
+void update_best_tour(tour &__a, tour &__b)
+{
+    if (__a.__cost < __b.__cost)
+    {
+        __b = __a;
+    }
+}
+
+int so (unsigned long termination, int population)
 {
     //time
     //int endTime = clock() + msecs;
 
     // generate x' && identify best organism on ecosystem
-    pair<int, double> best_organism = generate_ecosystem(population, __initial_tour);
-    best_tour = ecosystem[best_organism.first];
+    best_tour = __initial_tour;
+    
+    int best_organism = generate_ecosystem(population, best_tour);
+    
+    update_best_tour(ecosystem[best_organism], best_tour);
+    
     int v_i, v_j;
     
     for (unsigned long i = 0 ; i < termination; i++)
@@ -129,27 +139,24 @@ pair<int, double> so (unsigned long termination, int population)
             v_j = rand() % ecosystem.size();
         } while (v_i == v_j);
         
-        cout<<best_organism.second<<std::endl;
+        cout<<best_tour.__cost<<std::endl;
         //mutualism
-        apply_mutualism(best_organism, v_i, v_j);
+        apply_mutualism(ecosystem[best_organism].__cost, v_i, v_j);
         
         // comensalism
         apply_comensalism(best_organism, v_i, v_j);
         
         // parasitism
-        apply_paristism(best_organism, v_i, v_j);
+        apply_paristism(ecosystem[best_organism].__cost, v_i, v_j);
         
         //generate new ecosystem & update best
         ecosystem.clear();
-        parasites.clear();
-        pair<int, double> t = generate_ecosystem(population, best_tour);
-        if (t.second < best_organism.second)
-        {
-            best_organism = t;
-            best_tour = ecosystem[best_organism.first];
-        }
+
+        best_organism = generate_ecosystem(population, best_tour);
+        
+        update_best_tour(ecosystem[best_organism], best_tour);
     }
-    return best_organism;
+    return best_tour.__cost;
 }
 
 void apply_sa(double &temperature, double &cooling_rate)
@@ -187,23 +194,25 @@ void apply_sa(double &temperature, double &cooling_rate)
             if (exp(-diffcost/temperature))
             {
                 best_tour = candidate;
-                cout<<"asaaaaaaexp"<<std::endl;
+                //cout<<"asaaaaaaexp"<<std::endl;
             }
         }
     }
     temperature *= cooling_rate;
 }
 
-pair<int, double> so_sa (double termination, int population, 
+double so_sa (double termination, int population,
                          double &temperature, double &cooling_rate)
 {
-    //time
-    //int endTime = clock() + msecs;
-
-    // generate x' && identify best organism on ecosystem
-    pair<int, double> best_organism = generate_ecosystem(population, __initial_tour);
-    best_tour = ecosystem[best_organism.first];
+    best_tour = __initial_tour;
+    
+    int best_organism = generate_ecosystem(population, best_tour);
+    
+    update_best_tour(ecosystem[best_organism], best_tour);
+    
     int v_i, v_j;
+    
+    double last_print = 0;
     
     for (unsigned long i = 0 ; i < termination; i++)
     {
@@ -216,27 +225,26 @@ pair<int, double> so_sa (double termination, int population,
             v_j = rand() % ecosystem.size();
         } while (v_i == v_j);
         
-        cout<<best_organism.second<<std::endl;
+        if (best_tour.__cost != last_print)
+            cout<<best_tour.__cost<<std::endl;
+        last_print = best_tour.__cost;
         //mutualism
-        apply_mutualism(best_organism, v_i, v_j);
+        apply_mutualism(ecosystem[best_organism].__cost, v_i, v_j);
         
         // comensalism
-        apply_comensalism(best_organism, v_i, v_j);
+        apply_comensalism(ecosystem[best_organism].__cost, v_i, v_j);
         
         // parasitism
-        apply_paristism(best_organism, v_i, v_j);
+        apply_paristism(ecosystem[best_organism].__cost, v_i, v_j);
         
         //generate new ecosystem & update best
         ecosystem.clear();
-        parasites.clear();
-        pair<int, double> t = generate_ecosystem(population, best_tour);
-        if (t.second < best_organism.second)
-        {
-            best_organism = t;
-            best_tour = ecosystem[best_organism.first];
-        }
+       
+        best_organism = generate_ecosystem(population, best_tour);
+        
+        update_best_tour(ecosystem[best_organism], best_tour);
     }
-    return best_organism;
+    return best_tour.__cost;
 }
 
 double calculate_distance (pdd a,pdd b)
@@ -289,7 +297,6 @@ int main(int argc, const char * argv[])
     float n,x,y;
     cin>>n>>x>>y;
     __initial_tour.__nodes.push_back(pdd(x,y));
-    
     unsigned int count = 0;
     
     while (cin>>n>>x>>y && n != -1)
@@ -306,13 +313,13 @@ int main(int argc, const char * argv[])
     printf("ecosystem initial cost: %f\n", cost);
 
     // SO PURO
-    //pair<int, double> best_organism = so(80000, 50);
+    double best_organism = so(80000, 50);
     //printf("ecosystem best cost: %f\n", best_organism.second);
 
     //SO_SA
     double temperature = 0.025, cooling_rate = 0.99;
-    pair<int, double> best_organism = so_sa(100000, 50, temperature, cooling_rate);
-    printf("ecosystem best cost: %f\n", best_organism.second);
+    //double best_organism = so_sa(100000, 50, temperature, cooling_rate);
+    printf("ecosystem best cost: %f\n", best_organism);
     //write result to file
     // ofstream myfile ("tsp.txt");
     // if (myfile.is_open())
