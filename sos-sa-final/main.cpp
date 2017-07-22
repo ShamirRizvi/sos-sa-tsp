@@ -290,6 +290,23 @@ pdd swap_elements (int node_a, int node_b, vector<pdd> &nodes)
     return result;
 }
 
+void save_route_in(string filename)
+{
+    //write result to file
+    ofstream myfile (filename);
+    if (myfile.is_open())
+    {
+        for (int i = 0; i < best_tour.__nodes.size(); i++)
+        {
+            myfile << i
+                   <<" "
+                   <<best_tour.__nodes[i].first
+                   <<" "
+                   <<best_tour.__nodes[i].second<<std::endl;
+        }
+     }
+}
+
 int main(int argc, const char * argv[])
 
 {
@@ -312,22 +329,15 @@ int main(int argc, const char * argv[])
     __initial_tour.__cost = cost;
     printf("ecosystem initial cost: %f\n", cost);
 
-    // SO PURO
+    /*SO PURO*/
     double best_organism = so(80000, 50);
     //printf("ecosystem best cost: %f\n", best_organism.second);
 
-    //SO_SA
+    /*SO_SA*/
     double temperature = 0.025, cooling_rate = 0.99;
     //double best_organism = so_sa(100000, 50, temperature, cooling_rate);
-    printf("ecosystem best cost: %f\n", best_organism);
-    //write result to file
-    // ofstream myfile ("tsp.txt");
-    // if (myfile.is_open())
-    // {
-    //     for (int i = 0; i < best_tour.__nodes.size(); i++)
-    //     {
-    //          myfile << i<<" "<<best_tour.__nodes[i].first <<" "<<best_tour.__nodes[i].second<<std::endl;
-    //     }
-    // }
     
+    printf("ecosystem best cost: %f\n", best_organism);
+    
+    //save_route_in("route");
 }
