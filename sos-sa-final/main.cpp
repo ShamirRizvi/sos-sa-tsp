@@ -10,10 +10,10 @@
 
 using namespace std;
 
+pdd swap_elements (int node_a, int node_b, vector<pdd> &nodes);
+
 double cost = 0;
 tour __initial_tour;
-
-pdd swap_elements (int node_a, int node_b, vector<pdd> &nodes);
 vector <tour> ecosystem;
 vector <tour> parasites;
 tour best_tour;
@@ -94,21 +94,6 @@ void apply_paristism(double best_organism, int v_i, int v_j)
         ecosystem[v_i] = ecosystem[v_j];
 }
 
-bool update_best_solution(pair<int, double> &best_organism)
-{
-    bool result = false;
-    for (int i = 0; i < ecosystem.size(); i++)
-    {
-        if (ecosystem[i].__cost < best_organism.second)
-        {
-            best_organism.first = i;
-            best_organism.second = ecosystem[i].__cost;
-            result = true;
-        }
-    }
-    return result;
-}
-
 void update_best_tour(tour &__a, tour &__b)
 {
     if (__a.__cost < __b.__cost)
@@ -119,10 +104,6 @@ void update_best_tour(tour &__a, tour &__b)
 
 int so (unsigned long termination, int population)
 {
-    //time
-    //int endTime = clock() + msecs;
-
-    // generate x' && identify best organism on ecosystem
     best_tour = __initial_tour;
     
     int best_organism = generate_ecosystem(population, best_tour);
@@ -194,7 +175,6 @@ void apply_sa(double &temperature, double &cooling_rate)
             if (exp(-diffcost/temperature))
             {
                 best_tour = candidate;
-                //cout<<"asaaaaaaexp"<<std::endl;
             }
         }
     }
