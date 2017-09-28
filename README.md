@@ -1,6 +1,6 @@
-
 # Implementation of paper: Simulated Annealing based Symbiotic Organisms Search Optimization Algorithm for Traveling Salesman Problem
-
+cuda
+aaad 
 # Install 
 g++11 or more
 
