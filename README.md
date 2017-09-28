@@ -1,8 +1,12 @@
 # Implementation of paper: Simulated Annealing based Symbiotic Organisms Search Optimization Algorithm for Traveling Salesman Problem
-cuda
-aaad 
+
+- Add cuda to program 
 # Install 
 g++11 or more
+
+# Compile
+nvcc -Xcompiler "-std=c++0x" main.cpp
+
 
 # Running tests
 instances can be found: 
